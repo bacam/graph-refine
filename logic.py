@@ -11,7 +11,7 @@ from syntax import word32T, word8T, boolT, builtinTs, Expr, Node
 from syntax import true_term, false_term
 from syntax import foldr1
 
-(mk_var, mk_plus, mk_uminus, mk_minus, mk_times, mk_modulus, mk_bwand, mk_eq,
+(mk_var, mk_plus, mk_uminus, mk_minus, mk_times, mk_modulus, mk_bwand, mk_bwor, mk_eq,
 mk_less_eq, mk_less, mk_implies, mk_and, mk_or, mk_not, mk_word32, mk_word8,
 mk_word32_maybe, mk_cast, mk_memacc, mk_memupd, mk_arr_index, mk_arroffs,
 mk_if, mk_meta_typ, mk_pvalid) = syntax.mks
@@ -128,6 +128,10 @@ def mk_aligned (w, n):
 	mask = Expr ('Num', w.typ, val = ((1 << n) - 1))
 	return mk_eq (mk_bwand (w, mask), Expr ('Num', w.typ, val = 0))
 
+# Ideally we would do this per-function based on information from the ELF file,
+# but it's simpler to set it for an entire program in target.py.
+arm_none_eabi_gnu_thumb_mode = False
+
 def mk_eqs_arm_none_eabi_gnu (var_c_args, var_c_rets, c_imem, c_omem,
 		min_stack_size):
 	arg_regs = mk_var_list (['r0', 'r1', 'r2', 'r3'], word32T)
@@ -138,9 +142,14 @@ def mk_eqs_arm_none_eabi_gnu (var_c_args, var_c_rets, c_imem, c_omem,
 	sregs = mk_stack_sequence (sp, 4, st, word32T, len (var_c_args) + 1)
 	
 	ret = mk_var ('ret', word32T)
-	preconds = [mk_aligned (sp, 2), mk_eq (ret, mk_var ('r14', word32T)),
-		mk_aligned (ret, 2), mk_eq (r0_input, r0),
+	preconds = [mk_aligned (sp, 2), mk_eq (r0_input, r0),
 		mk_less_eq (min_stack_size, sp)]
+	if arm_none_eabi_gnu_thumb_mode:
+		preconds += [mk_aligned (ret, 1),
+			mk_eq (ret, mk_bwor (mk_var ('r14', word32T), mk_word32(1)))]
+	else:
+		preconds += [mk_aligned (ret, 2),
+			mk_eq (ret, mk_var ('r14', word32T))]
 	post_eqs = [(x, x) for x in mk_var_list (['r4', 'r5', 'r6', 'r7', 'r8',
 			'r9', 'r10', 'r11', 'r13'], word32T)]
 

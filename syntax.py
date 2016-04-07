@@ -1284,6 +1284,11 @@ def mk_bwand (x, y):
 	assert x.typ.kind == 'Word'
 	return Expr ('Op', x.typ, name = 'BWAnd', vals = [x, y])
 
+def mk_bwor (x, y):
+	assert x.typ == y.typ
+	assert x.typ.kind == 'Word'
+	return Expr ('Op', x.typ, name = 'BWOr', vals = [x, y])
+
 def mk_eq (x, y):
 	assert x.typ == y.typ
 	return Expr ('Op', boolT, name = 'Equals', vals = [x, y])
@@ -1400,7 +1405,7 @@ def mk_pvalid (htd, typ, p):
 def mk_rel_wrapper (nm, vals):
 	return Expr ('Op', builtinTs['RelWrapper'], name = nm, vals = vals)
 
-mks = (mk_var, mk_plus, mk_uminus, mk_minus, mk_times, mk_modulus, mk_bwand,
+mks = (mk_var, mk_plus, mk_uminus, mk_minus, mk_times, mk_modulus, mk_bwand, mk_bwor,
 mk_eq, mk_less_eq, mk_less, mk_implies, mk_and, mk_or, mk_not, mk_word32,
 mk_word8, mk_word32_maybe, mk_cast, mk_memacc, mk_memupd, mk_arr_index,
 mk_arroffs, mk_if, mk_meta_typ, mk_pvalid)
