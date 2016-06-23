@@ -372,7 +372,7 @@ def substitute_simple (func):
 	from syntax import Node
 	for (n, node) in func.nodes.items ():
 		func.nodes[n] = node.subst_exprs (subst_expr,
-			ss = set (['Symbol', 'PAlignValid']))
+			ss = set (['Symbol', 'Op']))
 
 def compile_funcs (functions):
 	for (f, func) in functions.iteritems ():
